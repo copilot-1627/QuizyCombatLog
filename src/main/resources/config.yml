@@ -1,0 +1,25 @@
+# Combat Configuration
+combat:
+  # Duration of combat tag in seconds
+  duration: 10
+  
+  # Whether to drop player's inventory when they combat log
+  inventory-drop: true
+  
+  # List of commands that can be used during combat
+  unblocked-commands:
+    - "show"
+    - "123"
+    - "qcl"
+    - "help"
+
+# Custom Messages Configuration
+messages:
+  combat-started: "&4&l⚔ &8» &7You have entered &d&lcombat&7! &8(&7Do not log out&8)"
+  combat-ended: "&2&l✔ &8» &7You are no longer in &dcombat&7!"
+  command-blocked: "&4&l✖ &8» &7Commands are &ddisabled &7during combat!"
+  player-combat-logged: "&4&l☠ &8» &d{player} &7has combat logged!"
+
+# Action Bar Configuration
+actionbar:
+  format: "&d&lCOMBAT &8» &f{time}s"

@@ -1,0 +1,22 @@
+name: QuizyCombatLog
+version: '1.0.0'
+description: A powerful and lightweight combat logging plugin that prevents players from logging out during PvP combat
+author: Quizy
+main: com.quizy.combatlog.QuizyCombatLog
+api-version: '1.21'
+website: https://discord.gg/UUaNzfZyc6
+softdepend: []
+
+commands:
+  qcl:
+    description: Main QuizyCombatLog command
+    usage: /<command> [help|reload|combattime|inventorydrop]
+    aliases: [quizycombatlog, combatlog]
+
+permissions:
+  quizycombatlog.admin:
+    description: Allows access to admin commands
+    default: op
+  quizycombatlog.reload:
+    description: Allows reloading the plugin
+    default: op
