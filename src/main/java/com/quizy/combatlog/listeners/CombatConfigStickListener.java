@@ -18,6 +18,7 @@ import org.bukkit.util.Vector;
 import com.quizy.combatlog.QuizyCombatLog;
 import com.quizy.combatlog.managers.AreaManager;
 import com.quizy.combatlog.utils.MessageUtils;
+import com.quizy.combatlog.utils.HologramManager;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -29,12 +30,14 @@ public class CombatConfigStickListener implements Listener {
     private final NamespacedKey configStickKey;
     private final NamespacedKey areaNameKey;
     private final Map<UUID, Location> firstCorners;
+    private final HologramManager hologramManager;
     
     public CombatConfigStickListener(QuizyCombatLog plugin) {
         this.plugin = plugin;
         this.configStickKey = new NamespacedKey(plugin, "config_stick");
         this.areaNameKey = new NamespacedKey(plugin, "area_name");
         this.firstCorners = new HashMap<>();
+        this.hologramManager = new HologramManager(plugin);
     }
     
     @EventHandler(priority = EventPriority.HIGH)
@@ -46,7 +49,7 @@ public class CombatConfigStickListener implements Listener {
         Player player = event.getPlayer();
         ItemStack item = player.getInventory().getItemInMainHand();
         
-        if (item.getType() != Material.STICK) {
+        if (item == null || item.getType() != Material.STICK) {
             return;
         }
         
@@ -88,7 +91,18 @@ public class CombatConfigStickListener implements Listener {
             MessageUtils.sendMessage(player, plugin.getConfigManager().getConfigStickRemovedMessage());
             
             // Remove the stick from player's hand immediately
-            player.getInventory().setItemInMainHand(new ItemStack(Material.AIR));
+            if (player.getInventory().getItemInMainHand().isSimilar(item)) {
+                player.getInventory().setItemInMainHand(null);
+            } else {
+                // Search for the stick in inventory and remove it
+                for (int i = 0; i < player.getInventory().getSize(); i++) {
+                    ItemStack inventoryItem = player.getInventory().getItem(i);
+                    if (inventoryItem != null && inventoryItem.isSimilar(item)) {
+                        player.getInventory().setItem(i, null);
+                        break;
+                    }
+                }
+            }
         }
     }
     
@@ -107,8 +121,13 @@ public class CombatConfigStickListener implements Listener {
         
         // Check if player is in combat
         if (!plugin.getCombatManager().isInCombat(player)) {
+            // Remove holograms if not in combat
+            hologramManager.removeHolograms(player);
             return;
         }
+        
+        // Show holograms near safe zone boundaries
+        hologramManager.showBoundaryHolograms(player, to);
         
         // Check if player is trying to enter a disabled area from outside
         AreaManager.DisabledArea fromArea = plugin.getAreaManager().getDisabledAreaAt(from);
@@ -118,10 +137,10 @@ public class CombatConfigStickListener implements Listener {
         if (fromArea == null && toArea != null && toArea.isJoiningDisabled()) {
             event.setCancelled(true);
             
-            // Create knockback effect
+            // Create stronger knockback effect
             Vector direction = from.toVector().subtract(to.toVector()).normalize();
-            Vector knockback = direction.multiply(1.5); // Increased knockback force
-            knockback.setY(0.3); // Add slight upward force
+            Vector knockback = direction.multiply(2.0); // Stronger knockback force
+            knockback.setY(0.5); // Add upward force
             
             player.setVelocity(knockback);
             
@@ -129,14 +148,6 @@ public class CombatConfigStickListener implements Listener {
             MessageUtils.sendMessage(player, plugin.getConfigManager().getCannotEnterAreaMessage()
                     .replace("{areaName}", toArea.getName()));
             
-            return;
-        }
-        
-        // If player is already inside a safe zone but trying to move deeper (additional check)
-        if (fromArea != null && toArea != null && 
-            fromArea.getName().equals(toArea.getName()) && 
-            toArea.isJoiningDisabled()) {
-            // Allow movement within the same safe zone - no restriction
             return;
         }
     }
@@ -160,5 +171,9 @@ public class CombatConfigStickListener implements Listener {
         }
         
         return stick;
+    }
+    
+    public HologramManager getHologramManager() {
+        return hologramManager;
     }
 }
