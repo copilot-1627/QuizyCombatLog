@@ -26,6 +26,11 @@ public class AreaManager {
         loadDisabledAreas();
     }
     
+    public void reloadAreas() {
+        disabledAreas.clear();
+        loadDisabledAreas();
+    }
+    
     private void loadDisabledAreas() {
         if (!disabledAreasFile.exists()) {
             try {
@@ -46,12 +51,18 @@ public class AreaManager {
             if (worldName == null) continue;
             
             World world = plugin.getServer().getWorld(worldName);
-            if (world == null) continue;
+            if (world == null) {
+                plugin.getLogger().warning("World '" + worldName + "' not found for area '" + areaName + "'");
+                continue;
+            }
             
             ConfigurationSection corner1Section = section.getConfigurationSection("corner1");
             ConfigurationSection corner2Section = section.getConfigurationSection("corner2");
             
-            if (corner1Section == null || corner2Section == null) continue;
+            if (corner1Section == null || corner2Section == null) {
+                plugin.getLogger().warning("Invalid corner data for area '" + areaName + "'");
+                continue;
+            }
             
             Location corner1 = new Location(world,
                     corner1Section.getDouble("x"),
@@ -107,6 +118,7 @@ public class AreaManager {
         disabledAreasConfig.set(path + "joining_disabled", false);
         
         saveDisabledAreas();
+        plugin.getLogger().info("Created disabled combat area: " + name + " in world " + world.getName());
     }
     
     public boolean removeDisabledArea(String name) {
@@ -117,6 +129,7 @@ public class AreaManager {
         disabledAreas.remove(name);
         disabledAreasConfig.set(name, null);
         saveDisabledAreas();
+        plugin.getLogger().info("Removed disabled combat area: " + name);
         return true;
     }
     
@@ -126,6 +139,7 @@ public class AreaManager {
             area.setJoiningDisabled(disabled);
             disabledAreasConfig.set(name + ".joining_disabled", disabled);
             saveDisabledAreas();
+            plugin.getLogger().info("Area " + name + " joining " + (disabled ? "disabled" : "enabled"));
         }
     }
     
