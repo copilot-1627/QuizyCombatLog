@@ -70,6 +70,9 @@ public class CombatConfigStickListener implements Listener {
         
         event.setCancelled(true);
         
+        if (event.getClickedBlock() == null) {
+            return;
+        }
         Location clickedLocation = event.getClickedBlock().getLocation();
         UUID playerUUID = player.getUniqueId();
         
@@ -91,18 +94,7 @@ public class CombatConfigStickListener implements Listener {
             MessageUtils.sendMessage(player, plugin.getConfigManager().getConfigStickRemovedMessage());
             
             // Remove the stick from player's hand immediately
-            if (player.getInventory().getItemInMainHand().isSimilar(item)) {
-                player.getInventory().setItemInMainHand(null);
-            } else {
-                // Search for the stick in inventory and remove it
-                for (int i = 0; i < player.getInventory().getSize(); i++) {
-                    ItemStack inventoryItem = player.getInventory().getItem(i);
-                    if (inventoryItem != null && inventoryItem.isSimilar(item)) {
-                        player.getInventory().setItem(i, null);
-                        break;
-                    }
-                }
-            }
+            player.getInventory().setItemInMainHand(new ItemStack(Material.AIR));
         }
     }
     
@@ -121,7 +113,6 @@ public class CombatConfigStickListener implements Listener {
         
         // Check if player is in combat
         if (!plugin.getCombatManager().isInCombat(player)) {
-            // Remove holograms if not in combat
             hologramManager.removeHolograms(player);
             return;
         }
@@ -137,18 +128,14 @@ public class CombatConfigStickListener implements Listener {
         if (fromArea == null && toArea != null && toArea.isJoiningDisabled()) {
             event.setCancelled(true);
             
-            // Create stronger knockback effect
+            // Create stronger knockback effect (approx 10 blocks)
             Vector direction = from.toVector().subtract(to.toVector()).normalize();
-            Vector knockback = direction.multiply(2.0); // Stronger knockback force
-            knockback.setY(0.5); // Add upward force
-            
+            Vector knockback = direction.multiply(2.5);
+            knockback.setY(0.6);
             player.setVelocity(knockback);
             
-            // Send message
             MessageUtils.sendMessage(player, plugin.getConfigManager().getCannotEnterAreaMessage()
                     .replace("{areaName}", toArea.getName()));
-            
-            return;
         }
     }
     
