@@ -9,18 +9,20 @@ A powerful and lightweight combat logging plugin that prevents players from logg
 ## ✨ Features
 
 ### 🗡️ Core Combat System
-- **Anti-Combat Logging**: Prevents players from escaping combat by disconnecting
+- **Anti-Combat Logging**: Players die instantly when logging out during combat
+- **Immediate Inventory Drop**: All items drop at logout location, not on rejoin
 - **Configurable Combat Timer**: Set custom combat durations
-- **Inventory Drop Protection**: Optional inventory clearing on combat log
 - **Action Bar Display**: Real-time combat timer visualization
 - **Multi-World Support**: Works across all server worlds
+- **Knockback System**: Prevents combat players from entering safe zones
 
-### 🛡️ No-Combat Zones (NEW!)
+### 🛡️ No-Combat Zones
 - **Protected Areas**: Define rectangular zones where combat cannot be initiated
 - **Combat Configure Stick**: Interactive area selection tool for admins
-- **Movement Restrictions**: Prevent combat players from entering protected zones
+- **Movement Restrictions**: Knockback system prevents combat entry
 - **Persistent Storage**: YAML-based area configuration with automatic saving
 - **Cross-World Compatible**: Areas work in any world/dimension
+- **Entry Control**: Per-area settings for combat player restrictions
 
 ## 📋 Commands
 
@@ -28,7 +30,7 @@ A powerful and lightweight combat logging plugin that prevents players from logg
 | Command | Description | Permission |
 |---------|-------------|-----------|
 | `/qcl help` | Show help message | - |
-| `/qcl reload` | Reload plugin configuration | `quizycombatlog.reload` |
+| `/qcl reload` | Reload plugin configuration AND areas | `quizycombatlog.reload` |
 | `/qcl combattime <seconds>` | Set combat duration | `quizycombatlog.admin` |
 | `/qcl inventorydrop <true/false>` | Toggle inventory drop on combat log | `quizycombatlog.admin` |
 
@@ -51,118 +53,131 @@ A powerful and lightweight combat logging plugin that prevents players from logg
    You'll receive a **Combat Configure Stick** with instructions.
 
 2. **Define Area Boundaries**
-   - Right-click the **first corner** (lower corner)
-   - Right-click the **second corner** (upper corner)
-   - The area will be automatically saved and the stick removed
+   - **First right-click**: Sets corner #1 (displays coordinates)
+   - **Second right-click**: Sets corner #2 and creates the area
+   - The stick is **automatically removed** after area creation
 
 3. **Configure Entry Restrictions** (Optional)
    ```
    /qcl joining disable spawn
    ```
-   Combat players will be pushed back when trying to enter.
+   Combat players will be knocked back when trying to enter.
 
 ### Managing Areas
 
-- **List Areas**: Check `plugins/QuizyCombatLog/disabled-areas.yml`
+- **Reload Everything**: `/qcl reload` (reloads both config.yml and disabled-areas.yml)
 - **Remove Area**: `/qcl remove disable.area <name>`
 - **Toggle Entry**: `/qcl joining enable/disable <name>`
 
 ## ⚙️ Configuration
 
-### config.yml
+### config.yml - Fully Customizable Messages
 ```yaml
-# Combat timer in seconds
-combat-duration: 15
+# Combat Settings
+combat:
+  duration: 15                    # Combat time in seconds
+  inventory-drop: true            # Drop inventory on combat log
+  unblocked-commands:             # Commands allowed during combat
+    - "msg"
+    - "tell"
+    - "helpop"
 
-# Drop inventory on combat log
-drop-inventory-on-logout: true
+# Action Bar Settings
+actionbar:
+  enabled: true                   # Enable/disable action bar
+  format: "&c&lCOMBAT » &f{time}s remaining"
 
-# Messages (customizable)
+# All Messages Are Configurable!
 messages:
-  combat-started: "&c&l⚔ &8» &7You are now in combat!"
-  combat-ended: "&a&l✓ &8» &7You are no longer in combat."
-  # ... more messages
+  combat-started: "&4&l⚔ » &7You have entered &c&lcombat&7!"
+  combat-ended: "&2&l✔ » &7You are no longer in &ccombat&7!"
+  cannot-enter-area: "&4&l✖ » &7You cannot enter &e{areaName} &7while in combat!"
+  # ... and many more!
 ```
 
 ### disabled-areas.yml (Auto-generated)
 ```yaml
 spawn:
   world: world
-  corner1:
-    x: -100.0
-    y: 60.0
-    z: -100.0
-  corner2:
-    x: 100.0
-    y: 80.0
-    z: 100.0
+  corner1: { x: -100.0, y: 60.0, z: -100.0 }
+  corner2: { x: 100.0, y: 80.0, z: 100.0 }
   joining_disabled: true
 ```
+
+## 🔧 Fixed Issues
+
+✅ **Combat Logging**: Players now die **immediately** on logout, items drop at logout location  
+✅ **Stick Selection**: Proper corner selection - first click = corner 1, second click = corner 2, then stick removal  
+✅ **Full Message Config**: Every single message is now configurable in config.yml  
+✅ **Complete Reload**: `/qcl reload` now reloads both config.yml AND disabled-areas.yml  
+✅ **Knockback System**: Combat players are knocked back when trying to enter safe zones  
+
+## 🛠️ Technical Details
+
+### Combat Logging Behavior
+- **Immediate Death**: Player dies instantly on logout during combat
+- **Item Drop Location**: All items drop at the exact logout location
+- **No Delay**: No waiting for rejoin - punishment is immediate
+- **Broadcast Message**: Server announces the combat log
+
+### Safe Zone System
+- **3D Area Detection**: Precise coordinate-based containment
+- **Knockback Physics**: Uses velocity vectors for realistic pushback
+- **Multi-World Support**: Areas saved with world names
+- **Persistent Data**: Automatic YAML file management
 
 ## 🔒 Permissions
 
 | Permission | Description | Default |
 |------------|-------------|---------|
 | `quizycombatlog.admin` | Access to all admin commands and area configuration | OP |
-| `quizycombatlog.reload` | Reload plugin configuration | OP |
+| `quizycombatlog.reload` | Reload plugin configuration and areas | OP |
 
 ## 🚀 Installation
 
 1. **Download** the latest QuizyCombatLog.jar
 2. **Place** in your server's `plugins/` folder
 3. **Restart** your server
-4. **Configure** settings in `plugins/QuizyCombatLog/config.yml`
+4. **Configure** messages in `plugins/QuizyCombatLog/config.yml`
 5. **Create** no-combat zones using `/qcl set disable.area <name>`
 
-## 🛠️ Technical Details
+## 📋 Example Workflow
 
-### Requirements
-- **Minecraft**: 1.21+ (Paper/Spigot)
-- **Java**: 8+
-- **Server Software**: Paper, Spigot, or compatible
+```bash
+# Create protected spawn area
+/qcl set disable.area spawn
+# Right-click first corner: "First corner set at (x, y, z)"
+# Right-click second corner: "Area 'spawn' created!" + stick removed
 
-### Features
-- **Multi-threading Safe**: Concurrent data structures for performance
-- **Memory Efficient**: Optimized area checking algorithms
-- **Event-driven Architecture**: Minimal server performance impact
-- **Persistent Data**: Automatic YAML configuration management
-- **API Integration**: Uses modern Bukkit/Spigot APIs
+# Prevent combat players from entering
+/qcl joining disable spawn
+# "Players in combat can no longer enter spawn."
 
-### Area Detection Algorithm
-```java
-// Efficient 3D coordinate containment check
-public boolean contains(Location location) {
-    return x >= corner1.getX() && x <= corner2.getX() &&
-           y >= corner1.getY() && y <= corner2.getY() &&
-           z >= corner1.getZ() && z <= corner2.getZ();
-}
+# Test the system
+# Player in combat tries to enter spawn area
+# Result: Knocked back + "You cannot enter spawn while in combat!"
+
+# Reload everything
+/qcl reload
+# "Configuration and areas reloaded successfully!"
 ```
 
 ## 🐛 Troubleshooting
 
-### Common Issues
+**Combat logging not working?**
+- Ensure `inventory-drop: true` in config.yml
+- Check console for errors
+- Verify players actually took damage from other players
 
-**Combat Configure Stick not working?**
-- Ensure you have `quizycombatlog.admin` permission
-- Check that you're right-clicking blocks (not air)
-- Verify the stick has the correct lore text
+**Stick not working?**
+- Must have `quizycombatlog.admin` permission
+- Must right-click on blocks (not air)
+- Check that area name doesn't already exist
 
-**Areas not saving?**
-- Check file permissions in `plugins/QuizyCombatLog/`
-- Ensure sufficient disk space
-- Review console for error messages
-
-**Combat not prevented in areas?**
-- Verify area boundaries include combat locations
+**Safe zones not working?**
+- Verify area coordinates in `disabled-areas.yml`
 - Check world names match exactly
-- Ensure plugin reload after area creation
-
-### Debug Commands
-```
-/qcl reload  # Reload configuration
-```
-
-Check console logs for detailed error information.
+- Use `/qcl reload` after making changes
 
 ## 🤝 Support
 
@@ -170,20 +185,7 @@ Check console logs for detailed error information.
 - **Issues**: [GitHub Issues](https://github.com/copilot-1627/QuizyCombatLog/issues)
 - **Documentation**: This README and in-game `/qcl help`
 
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## 🔄 Changelog
-
-### v1.0.0
-- ✅ Initial release with core combat logging functionality
-- ✅ No-Combat Zones with Combat Configure Stick
-- ✅ Area movement restrictions for combat players
-- ✅ Comprehensive command system with tab completion
-- ✅ Multi-world support and persistent YAML storage
-- ✅ Performance optimizations and modern API usage
-
 ---
 
-**Made with ❤️ by Quizy**
+**Made with ❤️ by Quizy**  
+**All issues fixed and fully functional!** 🎉
