@@ -74,7 +74,7 @@ public class AreaManager {
                     corner2Section.getDouble("y"),
                     corner2Section.getDouble("z"));
             
-            boolean joiningDisabled = section.getBoolean("joining_disabled", false);
+            boolean joiningDisabled = section.getBoolean("joining_disabled", true); // Default to true for safety
             
             DisabledArea area = new DisabledArea(areaName, world, corner1, corner2, joiningDisabled);
             disabledAreas.put(areaName, area);
@@ -103,7 +103,7 @@ public class AreaManager {
         Location lowerCorner = new Location(world, minX, minY, minZ);
         Location upperCorner = new Location(world, maxX, maxY, maxZ);
         
-        DisabledArea area = new DisabledArea(name, world, lowerCorner, upperCorner, false);
+        DisabledArea area = new DisabledArea(name, world, lowerCorner, upperCorner, true); // Default to joining disabled
         disabledAreas.put(name, area);
         
         // Save to config
@@ -115,10 +115,10 @@ public class AreaManager {
         disabledAreasConfig.set(path + "corner2.x", upperCorner.getX());
         disabledAreasConfig.set(path + "corner2.y", upperCorner.getY());
         disabledAreasConfig.set(path + "corner2.z", upperCorner.getZ());
-        disabledAreasConfig.set(path + "joining_disabled", false);
+        disabledAreasConfig.set(path + "joining_disabled", true); // Default to true
         
         saveDisabledAreas();
-        plugin.getLogger().info("Created disabled combat area: " + name + " in world " + world.getName());
+        plugin.getLogger().info("Created disabled combat area: " + name + " in world " + world.getName() + " with joining disabled by default");
     }
     
     public boolean removeDisabledArea(String name) {
