@@ -10,7 +10,7 @@ softdepend: []
 commands:
   qcl:
     description: Main QuizyCombatLog command
-    usage: /<command> [help|reload|combattime|inventorydrop|set|remove|joining]
+    usage: /<command> [help|reload|combattime|inventorydrop|set|remove|joining|world]
     aliases: [quizycombatlog, combatlog]
 
 permissions:
