@@ -34,6 +34,13 @@ public class CombatListener implements Listener {
             return;
         }
         
+        // Check if either player is in a disabled combat area
+        if (plugin.getAreaManager().isInDisabledArea(damager.getLocation()) || 
+            plugin.getAreaManager().isInDisabledArea(victim.getLocation())) {
+            // Don't start combat if either player is in a disabled area
+            return;
+        }
+        
         // Add both players to combat
         plugin.getCombatManager().addToCombat(damager, victim);
     }
