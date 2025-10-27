@@ -22,6 +22,11 @@ public class ActionBarManager {
         }
         
         actionBarTask = Bukkit.getScheduler().runTaskTimer(plugin, () -> {
+            // Only run if action bar is enabled
+            if (!plugin.getConfigManager().isActionBarEnabled()) {
+                return;
+            }
+            
             for (UUID playerUUID : plugin.getCombatManager().getPlayersInCombat()) {
                 Player player = Bukkit.getPlayer(playerUUID);
                 if (player != null && player.isOnline()) {
