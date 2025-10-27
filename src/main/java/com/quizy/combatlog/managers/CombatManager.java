@@ -27,14 +27,23 @@ public class CombatManager {
         
         long endTime = System.currentTimeMillis() + (getCombatDuration() * 1000L);
         
+        boolean wasInCombat = isInCombat(player);
+        boolean opponentWasInCombat = isInCombat(opponent);
+        
         // Add combat entry for both players
         combatMap.computeIfAbsent(playerUUID, k -> new ConcurrentHashMap<>()).put(opponentUUID, endTime);
         combatMap.computeIfAbsent(opponentUUID, k -> new ConcurrentHashMap<>()).put(playerUUID, endTime);
         
-        // Send combat started message
-        String combatStartMessage = plugin.getConfigManager().getCombatStartedMessage();
-        MessageUtils.sendMessage(player, combatStartMessage);
-        MessageUtils.sendMessage(opponent, combatStartMessage);
+        // Send combat started message only if not already in combat
+        if (!wasInCombat) {
+            String combatStartMessage = plugin.getConfigManager().getCombatStartedMessage();
+            MessageUtils.sendMessage(player, combatStartMessage);
+        }
+        
+        if (!opponentWasInCombat) {
+            String combatStartMessage = plugin.getConfigManager().getCombatStartedMessage();
+            MessageUtils.sendMessage(opponent, combatStartMessage);
+        }
         
         // Start combat end task for both players
         startCombatEndTask(player);
@@ -99,6 +108,54 @@ public class CombatManager {
                 .orElse(currentTime);
         
         return Math.max(0, (int) ((maxEndTime - currentTime) / 1000));
+    }
+    
+    public List<String> getCombatOpponents(Player player) {
+        UUID playerUUID = player.getUniqueId();
+        Map<UUID, Long> opponents = combatMap.get(playerUUID);
+        List<String> opponentNames = new ArrayList<>();
+        
+        if (opponents == null || opponents.isEmpty()) {
+            return opponentNames;
+        }
+        
+        long currentTime = System.currentTimeMillis();
+        
+        for (Map.Entry<UUID, Long> entry : opponents.entrySet()) {
+            if (entry.getValue() > currentTime) {
+                Player opponent = Bukkit.getPlayer(entry.getKey());
+                if (opponent != null) {
+                    long timeLeft = (entry.getValue() - currentTime) / 1000;
+                    opponentNames.add(opponent.getName() + " (" + timeLeft + "s)");
+                }
+            }
+        }
+        
+        return opponentNames;
+    }
+    
+    public Map<String, Integer> getCombatOpponentsWithTime(Player player) {
+        UUID playerUUID = player.getUniqueId();
+        Map<UUID, Long> opponents = combatMap.get(playerUUID);
+        Map<String, Integer> opponentsWithTime = new HashMap<>();
+        
+        if (opponents == null || opponents.isEmpty()) {
+            return opponentsWithTime;
+        }
+        
+        long currentTime = System.currentTimeMillis();
+        
+        for (Map.Entry<UUID, Long> entry : opponents.entrySet()) {
+            if (entry.getValue() > currentTime) {
+                Player opponent = Bukkit.getPlayer(entry.getKey());
+                if (opponent != null) {
+                    int timeLeft = (int) ((entry.getValue() - currentTime) / 1000);
+                    opponentsWithTime.put(opponent.getName(), timeLeft);
+                }
+            }
+        }
+        
+        return opponentsWithTime;
     }
     
     public void removeFromCombat(Player player) {
