@@ -4,7 +4,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import com.quizy.combatlog.QuizyCombatLog;
 
@@ -17,39 +16,10 @@ public class CombatListener implements Listener {
     }
     
     @EventHandler(priority = EventPriority.HIGH)
-    public void onEntityDamageByEntity(EntityDamageByEntityEvent event) {
-        if (event.isCancelled()) {
-            return;
-        }
-        
-        if (!(event.getDamager() instanceof Player) || !(event.getEntity() instanceof Player)) {
-            return;
-        }
-        
-        Player damager = (Player) event.getDamager();
-        Player victim = (Player) event.getEntity();
-        
-        // Don't tag if players are the same
-        if (damager.equals(victim)) {
-            return;
-        }
-        
-        // Check if either player is in a disabled combat area
-        if (plugin.getAreaManager().isInDisabledArea(damager.getLocation()) || 
-            plugin.getAreaManager().isInDisabledArea(victim.getLocation())) {
-            // Don't start combat if either player is in a disabled area
-            return;
-        }
-        
-        // Add both players to combat
-        plugin.getCombatManager().addToCombat(damager, victim);
-    }
-    
-    @EventHandler(priority = EventPriority.HIGH)
     public void onPlayerDeath(PlayerDeathEvent event) {
         Player player = event.getEntity();
-        
-        // Remove player from combat when they die
         plugin.getCombatManager().removeFromCombat(player);
+        // Also remove combat for anyone who was in combat with this player
+        plugin.getCombatManager().clearOpponentsWith(player);
     }
 }
