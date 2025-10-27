@@ -2,7 +2,7 @@
 #         QuizyCombatLog Config
 # ======================================
 # A powerful and lightweight combat logging plugin
-# with no-combat zone functionality
+# with no-combat zone functionality and holographic boundaries
 
 # ======================================
 #            Combat Settings
@@ -29,8 +29,27 @@ actionbar:
   # Enable action bar combat timer display
   enabled: true
   
-  # Action bar format - {time} will be replaced with remaining seconds
+  # Action bar format for general combat - {time} will be replaced with remaining seconds
   format: "&c&lCOMBAT &8» &f{time}s remaining"
+  
+  # Action bar format for single opponent - {opponent} = opponent name, {time} = combat time
+  single-opponent-format: "&c&lCOMBAT &8» &e{opponent} &7(&f{time}s&7)"
+  
+  # Action bar format for multiple opponents - {time} = remaining time
+  multiple-opponents-format: "&c&lCOMBAT &7(&f{time}s&7) &8»"
+
+# ======================================
+#          Hologram Settings
+# ======================================
+holograms:
+  # Enable holographic boundary display
+  enabled: true
+  
+  # Material for boundary blocks (only visible to combat players)
+  boundary-material: "RED_STAINED_GLASS_PANE"
+  
+  # Range in blocks to show boundary holograms when combat player approaches safe zone
+  boundary-range: 5
 
 # ======================================
 #              Messages
