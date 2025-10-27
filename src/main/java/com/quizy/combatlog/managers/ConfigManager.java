@@ -47,6 +47,19 @@ public class ConfigManager {
         return config.getStringList("combat.unblocked-commands");
     }
     
+    // Hologram Configuration
+    public String getHologramMaterial() {
+        return config.getString("holograms.boundary-material", "RED_STAINED_GLASS_PANE");
+    }
+    
+    public int getHologramBoundaryRange() {
+        return config.getInt("holograms.boundary-range", 5);
+    }
+    
+    public boolean isHologramEnabled() {
+        return config.getBoolean("holograms.enabled", true);
+    }
+    
     // Message Configuration
     public String getCombatStartedMessage() {
         return config.getString("messages.combat-started", "&4&l⚔ &8» &7You have entered &c&lcombat&7! &8(&7Do not log out&8)");
@@ -67,6 +80,14 @@ public class ConfigManager {
     // Action Bar Configuration
     public String getActionBarFormat() {
         return config.getString("actionbar.format", "&c&lCOMBAT &8» &f{time}s remaining");
+    }
+    
+    public String getActionBarSingleOpponentFormat() {
+        return config.getString("actionbar.single-opponent-format", "&c&lCOMBAT &8» &e{opponent} &7(&f{time}s&7)");
+    }
+    
+    public String getActionBarMultipleOpponentsFormat() {
+        return config.getString("actionbar.multiple-opponents-format", "&c&lCOMBAT &7(&f{time}s&7) &8»");
     }
     
     public boolean isActionBarEnabled() {
@@ -130,9 +151,9 @@ public class ConfigManager {
     // Command messages
     public String getHelpMessage() {
         return config.getString("messages.help", 
-            "&8&l&m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n" +
+            "&8&l&m─────────────────────────────────────────────────────────\n" +
             "&e&lQuizyCombatLog &8» &7Commands Help\n" +
-            "&8&l&m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n" +
+            "&8&l&m─────────────────────────────────────────────────────────\n" +
             "&7• &e/qcl help &8» &7Show this help message\n" +
             "&7• &e/qcl reload &8» &7Reload plugin configuration\n" +
             "&7• &e/qcl combattime <seconds> &8» &7Set combat duration\n" +
@@ -141,7 +162,7 @@ public class ConfigManager {
             "&7• &e/qcl remove disable.area <name> &8» &7Remove no-combat zone\n" +
             "&7• &e/qcl joining disable <name> &8» &7Prevent combat entry\n" +
             "&7• &e/qcl joining enable <name> &8» &7Allow combat entry\n" +
-            "&8&l&m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+            "&8&l&m─────────────────────────────────────────────────────────");
     }
     
     public String getNoPermissionMessage() {
