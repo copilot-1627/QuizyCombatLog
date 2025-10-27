@@ -93,12 +93,12 @@ public class CombatManager {
         }
         
         long currentTime = System.currentTimeMillis();
-        long minEndTime = opponents.values().stream()
+        long maxEndTime = opponents.values().stream()
                 .mapToLong(Long::longValue)
-                .min()
+                .max()
                 .orElse(currentTime);
         
-        return Math.max(0, (int) ((minEndTime - currentTime) / 1000));
+        return Math.max(0, (int) ((maxEndTime - currentTime) / 1000));
     }
     
     public void removeFromCombat(Player player) {
@@ -122,24 +122,6 @@ public class CombatManager {
     
     public Set<UUID> getPlayersInCombat() {
         return new HashSet<>(combatMap.keySet());
-    }
-    
-    public void handleCombatLog(Player player) {
-        if (plugin.getConfigManager().shouldDropInventory()) {
-            player.getInventory().clear();
-            player.getEnderChest().clear();
-        }
-        
-        // Broadcast combat log message
-        String combatLogMessage = plugin.getConfigManager().getPlayerCombatLoggedMessage()
-                .replace("{player}", player.getName());
-        Bukkit.broadcastMessage(MessageUtils.colorize(combatLogMessage));
-        
-        // Remove from combat
-        removeFromCombat(player);
-        
-        // Kill the player
-        player.setHealth(0);
     }
     
     private int getCombatDuration() {
