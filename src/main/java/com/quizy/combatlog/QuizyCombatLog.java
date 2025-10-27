@@ -48,6 +48,7 @@ public class QuizyCombatLog extends JavaPlugin {
         actionBarManager.startActionBarTask();
         
         getLogger().info("QuizyCombatLog has been enabled!");
+        getLogger().info("Features: Combat Logging, No-Combat Zones, Holographic Boundaries, Multiple Opponent Tracking");
     }
     
     @Override
@@ -58,6 +59,16 @@ public class QuizyCombatLog extends JavaPlugin {
         // Clear combat data
         if (combatManager != null) {
             combatManager.clearAllCombat();
+        }
+        
+        // Clear all holograms
+        if (combatConfigStickListener != null && combatConfigStickListener.getHologramManager() != null) {
+            combatConfigStickListener.getHologramManager().removeAllHolograms();
+        }
+        
+        // Stop action bar task
+        if (actionBarManager != null) {
+            actionBarManager.stopActionBarTask();
         }
         
         getLogger().info("QuizyCombatLog has been disabled!");
