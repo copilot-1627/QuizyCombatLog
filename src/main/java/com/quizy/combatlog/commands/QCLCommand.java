@@ -56,26 +56,23 @@ public class QCLCommand implements CommandExecutor, TabCompleter {
     
     private boolean handleReload(CommandSender sender) {
         if (!sender.hasPermission("quizycombatlog.reload")) {
-            String noPermMessage = plugin.getConfigManager().getNoPermissionMessage();
-            MessageUtils.sendMessage(sender, noPermMessage);
+            MessageUtils.sendMessage(sender, plugin.getConfigManager().getNoPermissionMessage());
             return true;
         }
         
         plugin.getConfigManager().reloadConfig();
-        String reloadMessage = plugin.getConfigManager().getReloadMessage();
-        MessageUtils.sendMessage(sender, reloadMessage);
+        MessageUtils.sendMessage(sender, plugin.getConfigManager().getReloadMessage());
         return true;
     }
     
     private boolean handleCombatTime(CommandSender sender, String[] args) {
         if (!sender.hasPermission("quizycombatlog.admin")) {
-            String noPermMessage = plugin.getConfigManager().getNoPermissionMessage();
-            MessageUtils.sendMessage(sender, noPermMessage);
+            MessageUtils.sendMessage(sender, plugin.getConfigManager().getNoPermissionMessage());
             return true;
         }
         
         if (args.length < 2) {
-            MessageUtils.sendMessage(sender, "&4&l✖ &8» &7Usage: /qcl combattime <seconds>");
+            MessageUtils.sendMessage(sender, plugin.getConfigManager().getUsageCombatTimeMessage());
             return true;
         }
         
@@ -87,52 +84,47 @@ public class QCLCommand implements CommandExecutor, TabCompleter {
             }
             
             plugin.getConfigManager().setCombatDuration(time);
-            String timeSetMessage = plugin.getConfigManager().getCombatTimeSetMessage(time);
-            MessageUtils.sendMessage(sender, timeSetMessage);
+            MessageUtils.sendMessage(sender, plugin.getConfigManager().getCombatTimeSetMessage(time));
         } catch (NumberFormatException e) {
-            String invalidNumberMessage = plugin.getConfigManager().getInvalidNumberMessage();
-            MessageUtils.sendMessage(sender, invalidNumberMessage);
+            MessageUtils.sendMessage(sender, plugin.getConfigManager().getInvalidNumberMessage());
         }
         return true;
     }
     
     private boolean handleInventoryDrop(CommandSender sender, String[] args) {
         if (!sender.hasPermission("quizycombatlog.admin")) {
-            String noPermMessage = plugin.getConfigManager().getNoPermissionMessage();
-            MessageUtils.sendMessage(sender, noPermMessage);
+            MessageUtils.sendMessage(sender, plugin.getConfigManager().getNoPermissionMessage());
             return true;
         }
         
         if (args.length < 2) {
-            MessageUtils.sendMessage(sender, "&4&l✖ &8» &7Usage: /qcl inventorydrop <true/false>");
+            MessageUtils.sendMessage(sender, plugin.getConfigManager().getUsageInventoryDropMessage());
             return true;
         }
         
         if (args[1].equalsIgnoreCase("true") || args[1].equalsIgnoreCase("false")) {
             boolean drop = Boolean.parseBoolean(args[1]);
             plugin.getConfigManager().setInventoryDrop(drop);
-            String dropSetMessage = plugin.getConfigManager().getInventoryDropSetMessage(drop);
-            MessageUtils.sendMessage(sender, dropSetMessage);
+            MessageUtils.sendMessage(sender, plugin.getConfigManager().getInventoryDropSetMessage(drop));
         } else {
-            String invalidBoolMessage = plugin.getConfigManager().getInvalidBooleanMessage();
-            MessageUtils.sendMessage(sender, invalidBoolMessage);
+            MessageUtils.sendMessage(sender, plugin.getConfigManager().getInvalidBooleanMessage());
         }
         return true;
     }
     
     private boolean handleSet(CommandSender sender, String[] args) {
         if (!sender.hasPermission("quizycombatlog.admin")) {
-            MessageUtils.sendMessage(sender, "&4&l✖ &8» &7You don't have permission to use this command!");
+            MessageUtils.sendMessage(sender, plugin.getConfigManager().getNoPermissionMessage());
             return true;
         }
         
         if (!(sender instanceof Player)) {
-            MessageUtils.sendMessage(sender, "&4&l✖ &8» &7This command can only be used by players!");
+            MessageUtils.sendMessage(sender, plugin.getConfigManager().getPlayerOnlyCommandMessage());
             return true;
         }
         
         if (args.length < 3 || !args[1].equalsIgnoreCase("disable.area")) {
-            MessageUtils.sendMessage(sender, "&4&l✖ &8» &7Usage: /qcl set disable.area <areaName>");
+            MessageUtils.sendMessage(sender, plugin.getConfigManager().getUsageSetAreaMessage());
             return true;
         }
         
@@ -141,7 +133,9 @@ public class QCLCommand implements CommandExecutor, TabCompleter {
         
         // Check if area already exists
         if (plugin.getAreaManager().getDisabledArea(areaName) != null) {
-            MessageUtils.sendMessage(sender, "&4&l✖ &8» &7Area '" + areaName + "' already exists!");
+            String message = plugin.getConfigManager().getAreaAlreadyExistsMessage()
+                    .replace("{areaName}", areaName);
+            MessageUtils.sendMessage(sender, message);
             return true;
         }
         
@@ -149,40 +143,46 @@ public class QCLCommand implements CommandExecutor, TabCompleter {
         ItemStack configStick = plugin.getCombatConfigStickListener().createConfigStick(areaName);
         player.getInventory().addItem(configStick);
         
-        MessageUtils.sendMessage(sender, "&a&l✓ &8» &7You received a &eCombat Configure Stick&7 for area '&e" + areaName + "&7'!");
+        String message = plugin.getConfigManager().getConfigStickGivenMessage()
+                .replace("{areaName}", areaName);
+        MessageUtils.sendMessage(sender, message);
         MessageUtils.sendMessage(sender, "&7Right-click two corners to define the protected area.");
         return true;
     }
     
     private boolean handleRemove(CommandSender sender, String[] args) {
         if (!sender.hasPermission("quizycombatlog.admin")) {
-            MessageUtils.sendMessage(sender, "&4&l✖ &8» &7You don't have permission to use this command!");
+            MessageUtils.sendMessage(sender, plugin.getConfigManager().getNoPermissionMessage());
             return true;
         }
         
         if (args.length < 3 || !args[1].equalsIgnoreCase("disable.area")) {
-            MessageUtils.sendMessage(sender, "&4&l✖ &8» &7Usage: /qcl remove disable.area <areaName>");
+            MessageUtils.sendMessage(sender, plugin.getConfigManager().getUsageRemoveAreaMessage());
             return true;
         }
         
         String areaName = args[2];
         
         if (plugin.getAreaManager().removeDisabledArea(areaName)) {
-            MessageUtils.sendMessage(sender, "&c&l✓ &8» &7Area &e" + areaName + "&c has been removed from disabled zones.");
+            String message = plugin.getConfigManager().getAreaRemovedMessage()
+                    .replace("{areaName}", areaName);
+            MessageUtils.sendMessage(sender, message);
         } else {
-            MessageUtils.sendMessage(sender, "&4&l✖ &8» &7Area '" + areaName + "' does not exist!");
+            String message = plugin.getConfigManager().getAreaDoesNotExistMessage()
+                    .replace("{areaName}", areaName);
+            MessageUtils.sendMessage(sender, message);
         }
         return true;
     }
     
     private boolean handleJoining(CommandSender sender, String[] args) {
         if (!sender.hasPermission("quizycombatlog.admin")) {
-            MessageUtils.sendMessage(sender, "&4&l✖ &8» &7You don't have permission to use this command!");
+            MessageUtils.sendMessage(sender, plugin.getConfigManager().getNoPermissionMessage());
             return true;
         }
         
         if (args.length < 3) {
-            MessageUtils.sendMessage(sender, "&4&l✖ &8» &7Usage: /qcl joining <disable/enable> <areaName>");
+            MessageUtils.sendMessage(sender, plugin.getConfigManager().getUsageJoiningMessage());
             return true;
         }
         
@@ -190,46 +190,34 @@ public class QCLCommand implements CommandExecutor, TabCompleter {
         String areaName = args[2];
         
         if (!action.equals("disable") && !action.equals("enable")) {
-            MessageUtils.sendMessage(sender, "&4&l✖ &8» &7Usage: /qcl joining <disable/enable> <areaName>");
+            MessageUtils.sendMessage(sender, plugin.getConfigManager().getUsageJoiningMessage());
             return true;
         }
         
         if (plugin.getAreaManager().getDisabledArea(areaName) == null) {
-            MessageUtils.sendMessage(sender, "&4&l✖ &8» &7Area '" + areaName + "' does not exist!");
+            String message = plugin.getConfigManager().getAreaDoesNotExistMessage()
+                    .replace("{areaName}", areaName);
+            MessageUtils.sendMessage(sender, message);
             return true;
         }
         
         boolean disable = action.equals("disable");
         plugin.getAreaManager().setJoiningDisabled(areaName, disable);
         
+        String message;
         if (disable) {
-            MessageUtils.sendMessage(sender, "&c&l✓ &8» &7Players in combat can no longer enter &e" + areaName + "&c.");
+            message = plugin.getConfigManager().getJoiningDisabledMessage()
+                    .replace("{areaName}", areaName);
         } else {
-            MessageUtils.sendMessage(sender, "&a&l✓ &8» &7Players in combat can now enter &e" + areaName + "&a again.");
+            message = plugin.getConfigManager().getJoiningEnabledMessage()
+                    .replace("{areaName}", areaName);
         }
+        MessageUtils.sendMessage(sender, message);
         return true;
     }
     
     private void sendHelpMessage(CommandSender sender) {
-        MessageUtils.sendMessage(sender, "&8&l&m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
-        MessageUtils.sendMessage(sender, "&e&lQuizyCombatLog &8» &7Commands Help");
-        MessageUtils.sendMessage(sender, "&8&l&m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
-        MessageUtils.sendMessage(sender, "&7• &e/qcl help &8» &7Show this help message");
-        
-        if (sender.hasPermission("quizycombatlog.reload")) {
-            MessageUtils.sendMessage(sender, "&7• &e/qcl reload &8» &7Reload the plugin configuration");
-        }
-        
-        if (sender.hasPermission("quizycombatlog.admin")) {
-            MessageUtils.sendMessage(sender, "&7• &e/qcl combattime <seconds> &8» &7Set combat duration");
-            MessageUtils.sendMessage(sender, "&7• &e/qcl inventorydrop <true/false> &8» &7Toggle inventory drop on combat log");
-            MessageUtils.sendMessage(sender, "&7• &e/qcl set disable.area <name> &8» &7Create a no-combat zone");
-            MessageUtils.sendMessage(sender, "&7• &e/qcl remove disable.area <name> &8» &7Remove a no-combat zone");
-            MessageUtils.sendMessage(sender, "&7• &e/qcl joining disable <name> &8» &7Prevent combat players from entering");
-            MessageUtils.sendMessage(sender, "&7• &e/qcl joining enable <name> &8» &7Allow combat players to enter");
-        }
-        
-        MessageUtils.sendMessage(sender, "&8&l&m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+        MessageUtils.sendMessage(sender, plugin.getConfigManager().getHelpMessage());
     }
     
     @Override
