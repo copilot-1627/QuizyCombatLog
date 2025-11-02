@@ -10,12 +10,12 @@ softdepend: []
 commands:
   qcl:
     description: Main QuizyCombatLog command
-    usage: /<command> [help|reload|combattime|inventorydrop]
+    usage: /<command> [help|reload|combattime|inventorydrop|set|remove|joining|world]
     aliases: [quizycombatlog, combatlog]
 
 permissions:
   quizycombatlog.admin:
-    description: Allows access to admin commands
+    description: Allows access to admin commands including combat area configuration
     default: op
   quizycombatlog.reload:
     description: Allows reloading the plugin

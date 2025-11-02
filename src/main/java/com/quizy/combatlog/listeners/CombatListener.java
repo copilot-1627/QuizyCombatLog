@@ -18,31 +18,29 @@ public class CombatListener implements Listener {
     
     @EventHandler(priority = EventPriority.HIGH)
     public void onEntityDamageByEntity(EntityDamageByEntityEvent event) {
-        if (event.isCancelled()) {
-            return;
-        }
-        
-        if (!(event.getDamager() instanceof Player) || !(event.getEntity() instanceof Player)) {
-            return;
-        }
-        
+        if (event.isCancelled()) return;
+        if (!(event.getDamager() instanceof Player) || !(event.getEntity() instanceof Player)) return;
         Player damager = (Player) event.getDamager();
         Player victim = (Player) event.getEntity();
+        if (damager.equals(victim)) return;
         
-        // Don't tag if players are the same
-        if (damager.equals(victim)) {
+        // Do not start combat if either is inside a disabled area
+        if (plugin.getAreaManager().isInDisabledArea(damager.getLocation()) || plugin.getAreaManager().isInDisabledArea(victim.getLocation())) {
             return;
         }
         
-        // Add both players to combat
+        // Optional: gate by disabled worlds (if configured)
+        if (plugin.getConfig().getStringList("disabled-worlds").contains(damager.getWorld().getName())) {
+            return;
+        }
+        
         plugin.getCombatManager().addToCombat(damager, victim);
     }
     
     @EventHandler(priority = EventPriority.HIGH)
     public void onPlayerDeath(PlayerDeathEvent event) {
         Player player = event.getEntity();
-        
-        // Remove player from combat when they die
         plugin.getCombatManager().removeFromCombat(player);
+        plugin.getCombatManager().clearOpponentsWith(player);
     }
 }

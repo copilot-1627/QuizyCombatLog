@@ -1,25 +1,124 @@
-# Combat Configuration
+# ======================================
+#         QuizyCombatLog Config
+# ======================================
+# A powerful and lightweight combat logging plugin
+# with no-combat zone functionality and holographic boundaries
+
+# ======================================
+#            Combat Settings
+# ======================================
 combat:
-  # Duration of combat tag in seconds
-  duration: 10
+  # Duration of combat in seconds
+  duration: 15
   
-  # Whether to drop player's inventory when they combat log
+  # Should inventory drop when player combat logs?
   inventory-drop: true
   
-  # List of commands that can be used during combat
+  # Commands that are allowed during combat (case-insensitive)
   unblocked-commands:
-    - "show"
-    - "123"
-    - "qcl"
-    - "help"
+    - "msg"
+    - "tell"
+    - "reply"
+    - "r"
+    - "helpop"
 
-# Custom Messages Configuration
-messages:
-  combat-started: "&4&l⚔ &8» &7You have entered &d&lcombat&7! &8(&7Do not log out&8)"
-  combat-ended: "&2&l✔ &8» &7You are no longer in &dcombat&7!"
-  command-blocked: "&4&l✖ &8» &7Commands are &ddisabled &7during combat!"
-  player-combat-logged: "&4&l☠ &8» &d{player} &7has combat logged!"
-
-# Action Bar Configuration
+# ======================================
+#           Action Bar Settings
+# ======================================
 actionbar:
-  format: "&d&lCOMBAT &8» &f{time}s"
+  # Enable action bar combat timer display
+  enabled: true
+  
+  # Action bar format for general combat - {time} will be replaced with remaining seconds
+  format: "&c&lCOMBAT &8» &f{time}s remaining"
+  
+  # Action bar format for single opponent - {opponent} = opponent name, {time} = combat time
+  single-opponent-format: "&c&lCOMBAT &8» &e{opponent} &7(&f{time}s&7)"
+  
+  # Action bar format for multiple opponents - {time} = remaining time
+  multiple-opponents-format: "&c&lCOMBAT &7(&f{time}s&7) &8»"
+
+# ======================================
+#          Hologram Settings
+# ======================================
+holograms:
+  # Enable holographic boundary display
+  enabled: true
+  
+  # Material for boundary blocks (only visible to combat players)
+  boundary-material: "RED_STAINED_GLASS_PANE"
+  
+  # Range in blocks to show boundary holograms when combat player approaches safe zone
+  boundary-range: 5
+
+# ======================================
+#              Messages
+# ======================================
+messages:
+  # Combat related messages
+  combat-started: "&4&l⚔ &8» &7You have entered &c&lcombat&7! &8(&7Do not log out&8)"
+  combat-ended: "&2&l✔ &8» &7You are no longer in &ccombat&7!"
+  command-blocked: "&4&l✖ &8» &7Commands are &cdisabled &7during combat!"
+  player-combat-logged: "&4&l☠ &8» &c{player} &7has combat logged and died!"
+  
+  # Combat Configure Stick messages
+  config-stick:
+    name: "&eCombat Configure Stick"
+    lore1: "&7Right-click two corners to define"
+    lore2: "&7the protected area."
+  
+  first-corner-set: "&a&l✔ &8» &7First corner set at ({x}, {y}, {z})"
+  second-corner-set: "&a&l✔ &8» &7Second corner set. Area &e{areaName} &7saved successfully!"
+  config-stick-removed: "&e&l⚠ &8» &7Combat Configure Stick removed."
+  config-stick-given: "&a&l✔ &8» &7You received a &eCombat Configure Stick &7for area &e{areaName}&7!"
+  
+  # Safe zone messages
+  cannot-enter-area: "&4&l✖ &8» &7You cannot enter &e{areaName} &7while in combat!"
+  
+  # Area management messages
+  area-already-exists: "&4&l✖ &8» &7Area &e{areaName} &7already exists!"
+  area-does-not-exist: "&4&l✖ &8» &7Area &e{areaName} &7does not exist!"
+  area-removed: "&c&l✔ &8» &7Area &e{areaName} &7has been removed from disabled zones."
+  joining-disabled: "&c&l✔ &8» &7Players in combat can no longer enter &e{areaName}&c."
+  joining-enabled: "&a&l✔ &8» &7Players in combat can now enter &e{areaName} &7again."
+  
+  # Command messages
+  help: |
+    &8&l&m──────────────────────────────────────────────────────────
+    &e&lQuizyCombatLog &8» &7Commands Help
+    &8&l&m──────────────────────────────────────────────────────────
+    &7• &e/qcl help &8» &7Show this help message
+    &7• &e/qcl reload &8» &7Reload plugin configuration
+    &7• &e/qcl combattime <seconds> &8» &7Set combat duration
+    &7• &e/qcl inventorydrop <true/false> &8» &7Toggle inventory drop
+    &7• &e/qcl set disable.area <name> &8» &7Create no-combat zone
+    &7• &e/qcl remove disable.area <name> &8» &7Remove no-combat zone
+    &7• &e/qcl joining disable <name> &8» &7Prevent combat entry
+    &7• &e/qcl joining enable <name> &8» &7Allow combat entry
+    &8&l&m──────────────────────────────────────────────────────────
+  
+  no-permission: "&4&l✖ &8» &7You don't have permission to use this command!"
+  reload: "&2&l✔ &8» &7Configuration and areas reloaded successfully!"
+  combat-time-set: "&2&l✔ &8» &7Combat time set to &e{time} &7seconds!"
+  inventory-drop-set: "&2&l✔ &8» &7Inventory drop &e{status}&7!"
+  invalid-number: "&4&l✖ &8» &7Please enter a valid number!"
+  invalid-boolean: "&4&l✖ &8» &7Please enter 'true' or 'false'!"
+  player-only: "&4&l✖ &8» &7This command can only be used by players!"
+  
+  # Usage messages
+  usage-set-area: "&4&l✖ &8» &7Usage: /qcl set disable.area <areaName>"
+  usage-remove-area: "&4&l✖ &8» &7Usage: /qcl remove disable.area <areaName>"
+  usage-joining: "&4&l✖ &8» &7Usage: /qcl joining <disable/enable> <areaName>"
+  usage-combat-time: "&4&l✖ &8» &7Usage: /qcl combattime <seconds>"
+  usage-inventory-drop: "&4&l✖ &8» &7Usage: /qcl inventorydrop <true/false>"
+
+# ======================================
+#          Advanced Settings
+# ======================================
+# Don't modify these unless you know what you're doing
+advanced:
+  # Check for updates on startup (future feature)
+  check-updates: true
+  
+  # Debug mode for troubleshooting
+  debug: false

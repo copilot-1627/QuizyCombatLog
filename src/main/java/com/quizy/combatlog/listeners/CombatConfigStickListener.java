@@ -18,6 +18,7 @@ import org.bukkit.util.Vector;
 import com.quizy.combatlog.QuizyCombatLog;
 import com.quizy.combatlog.managers.AreaManager;
 import com.quizy.combatlog.utils.MessageUtils;
+import com.quizy.combatlog.utils.HologramManager;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -29,12 +30,14 @@ public class CombatConfigStickListener implements Listener {
     private final NamespacedKey configStickKey;
     private final NamespacedKey areaNameKey;
     private final Map<UUID, Location> firstCorners;
+    private final HologramManager hologramManager;
     
     public CombatConfigStickListener(QuizyCombatLog plugin) {
         this.plugin = plugin;
         this.configStickKey = new NamespacedKey(plugin, "config_stick");
         this.areaNameKey = new NamespacedKey(plugin, "area_name");
         this.firstCorners = new HashMap<>();
+        this.hologramManager = new HologramManager(plugin);
     }
     
     @EventHandler(priority = EventPriority.HIGH)
@@ -46,7 +49,7 @@ public class CombatConfigStickListener implements Listener {
         Player player = event.getPlayer();
         ItemStack item = player.getInventory().getItemInMainHand();
         
-        if (item.getType() != Material.STICK) {
+        if (item == null || item.getType() != Material.STICK) {
             return;
         }
         
@@ -67,26 +70,30 @@ public class CombatConfigStickListener implements Listener {
         
         event.setCancelled(true);
         
+        if (event.getClickedBlock() == null) {
+            return;
+        }
         Location clickedLocation = event.getClickedBlock().getLocation();
         UUID playerUUID = player.getUniqueId();
         
         if (!firstCorners.containsKey(playerUUID)) {
             // Set first corner
-            firstCorners.put(playerUUID, clickedLocation);
-            MessageUtils.sendMessage(player, "§aFirst corner set at (" + 
-                    clickedLocation.getBlockX() + ", " + 
-                    clickedLocation.getBlockY() + ", " + 
-                    clickedLocation.getBlockZ() + ").");
+            firstCorners.put(playerUUID, clickedLocation.clone());
+            MessageUtils.sendMessage(player, plugin.getConfigManager().getFirstCornerSetMessage()
+                    .replace("{x}", String.valueOf(clickedLocation.getBlockX()))
+                    .replace("{y}", String.valueOf(clickedLocation.getBlockY()))
+                    .replace("{z}", String.valueOf(clickedLocation.getBlockZ())));
         } else {
             // Set second corner and create area
             Location firstCorner = firstCorners.remove(playerUUID);
             
             plugin.getAreaManager().addDisabledArea(areaName, player.getWorld(), firstCorner, clickedLocation);
             
-            MessageUtils.sendMessage(player, "§aSecond corner set. Area §e" + areaName + "§a saved successfully!");
-            MessageUtils.sendMessage(player, "§e Combat Configure Stick §7removed.");
+            MessageUtils.sendMessage(player, plugin.getConfigManager().getSecondCornerSetMessage()
+                    .replace("{areaName}", areaName));
+            MessageUtils.sendMessage(player, plugin.getConfigManager().getConfigStickRemovedMessage());
             
-            // Remove the stick from player's hand
+            // Remove the stick from player's hand immediately
             player.getInventory().setItemInMainHand(new ItemStack(Material.AIR));
         }
     }
@@ -106,26 +113,29 @@ public class CombatConfigStickListener implements Listener {
         
         // Check if player is in combat
         if (!plugin.getCombatManager().isInCombat(player)) {
+            hologramManager.removeHolograms(player);
             return;
         }
         
-        // Check if player is trying to enter a disabled area
-        AreaManager.DisabledArea area = plugin.getAreaManager().getDisabledAreaAt(to);
-        if (area != null && area.isJoiningDisabled()) {
-            // Check if they're coming from outside the area
-            if (!area.contains(from)) {
-                event.setCancelled(true);
-                
-                // Push player back
-                Vector direction = from.toVector().subtract(to.toVector()).normalize();
-                Location pushLocation = from.add(direction.multiply(10));
-                
-                // Ensure the push location is safe
-                pushLocation.setY(Math.max(pushLocation.getY(), from.getY()));
-                player.teleport(pushLocation);
-                
-                MessageUtils.sendMessage(player, "§cYou cannot enter §e" + area.getName() + "§c while in combat!");
-            }
+        // Show holograms near safe zone boundaries
+        hologramManager.showBoundaryHolograms(player, to);
+        
+        // Check if player is trying to enter a disabled area from outside
+        AreaManager.DisabledArea fromArea = plugin.getAreaManager().getDisabledAreaAt(from);
+        AreaManager.DisabledArea toArea = plugin.getAreaManager().getDisabledAreaAt(to);
+        
+        // If player is moving from outside a safe zone to inside a safe zone
+        if (fromArea == null && toArea != null && toArea.isJoiningDisabled()) {
+            event.setCancelled(true);
+            
+            // Create stronger knockback effect (approx 10 blocks)
+            Vector direction = from.toVector().subtract(to.toVector()).normalize();
+            Vector knockback = direction.multiply(2.5);
+            knockback.setY(0.6);
+            player.setVelocity(knockback);
+            
+            MessageUtils.sendMessage(player, plugin.getConfigManager().getCannotEnterAreaMessage()
+                    .replace("{areaName}", toArea.getName()));
         }
     }
     
@@ -134,10 +144,10 @@ public class CombatConfigStickListener implements Listener {
         ItemMeta meta = stick.getItemMeta();
         
         if (meta != null) {
-            meta.setDisplayName(MessageUtils.colorize("§eCombat Configure Stick"));
+            meta.setDisplayName(MessageUtils.colorize(plugin.getConfigManager().getConfigStickName()));
             meta.setLore(java.util.Arrays.asList(
-                    MessageUtils.colorize("§7Right-click two corners to define"),
-                    MessageUtils.colorize("§7the protected area.")
+                    MessageUtils.colorize(plugin.getConfigManager().getConfigStickLore1()),
+                    MessageUtils.colorize(plugin.getConfigManager().getConfigStickLore2())
             ));
             
             PersistentDataContainer container = meta.getPersistentDataContainer();
@@ -148,5 +158,9 @@ public class CombatConfigStickListener implements Listener {
         }
         
         return stick;
+    }
+    
+    public HologramManager getHologramManager() {
+        return hologramManager;
     }
 }
